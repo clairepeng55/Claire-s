@@ -85,21 +85,21 @@ def interpret_single_indicator(
     """
     Lightweight helper: interpret one indicator by name.
     Returns the IndicatorInterpretation as a dict, or None if not found.
- 
+
     `indicator_value` is the IndicatorType enum value string,
     e.g. "cpi", "unemployment", "yield_10y".
     """
     from data.models import IndicatorType
- 
+
     try:
         indicator = IndicatorType(indicator_value)
     except ValueError:
         return {"error": f"Unknown indicator '{indicator_value}'"}
- 
+
     series = ctx.get_series(indicator)
     if series is None:
         return {"error": f"No data available for {indicator_value}"}
- 
+
     if _use_stub():
         from llm.stub import stub_interpret_indicator
         result = stub_interpret_indicator(series)
@@ -107,6 +107,32 @@ def interpret_single_indicator(
         from llm.client import interpret_indicator
         market_ctx = ctx.summary_dict().get("market", {})
         result = interpret_indicator(series, market_ctx)
- 
+
     return result.model_dump()
+
+
+class MacroInterpreter:
+    """
+    Public class interface for macro interpretation.
+    Wraps the module-level functions for compatibility with code
+    expecting a class-based API.
+    """
+
+    @staticmethod
+    def interpret(ctx: MacroContext) -> MacroInterpretation:
+        """Run the full macro interpretation pipeline."""
+        return interpret(ctx)
+
+    @staticmethod
+    def stream_briefing(ctx: MacroContext) -> Iterator[str]:
+        """Stream a narrative macro briefing as text chunks."""
+        return stream_briefing(ctx)
+
+    @staticmethod
+    def interpret_single_indicator(
+        ctx: MacroContext,
+        indicator_value: str,
+    ) -> dict:
+        """Interpret one indicator by name."""
+        return interpret_single_indicator(ctx, indicator_value)
  

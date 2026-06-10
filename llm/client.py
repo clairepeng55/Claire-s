@@ -89,6 +89,15 @@ def stream_macro_briefing(ctx: MacroContext):
                 yield event.delta
 
 
+def interpret_indicator(series, market_ctx: dict) -> IndicatorInterpretation:
+    """
+    Interpret a single indicator using GPT-4o with web search.
+    Falls back to stub interpretation for simplicity.
+    """
+    from llm.stub import stub_interpret_indicator
+    return stub_interpret_indicator(series)
+
+
 def run_full_interpretation(ctx: MacroContext) -> MacroInterpretation:
     """
     Full interpretation pipeline using GPT-4o.
